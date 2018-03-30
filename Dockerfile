@@ -43,13 +43,17 @@ RUN \
   echo >> /root/.bashrc && \
   echo 'export PATH=~/scala-$SCALA_VERSION/bin:$PATH' >> /root/.bashrc
 
-# Install sbt
+# Install rsync: sbt uses it to sync "offline" preloaded-local repo
 RUN \
-  curl -L -o sbt-$SBT_VERSION.deb http://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb && \
-  dpkg -i sbt-$SBT_VERSION.deb && \
-  rm sbt-$SBT_VERSION.deb && \
   apt-get update && \
-  apt-get install sbt && \
+  apt-get install -y rsync && \
+  rm -rf /var/lib/apt/lists/*
+
+# Install sbt via direct download
+RUN \
+  cd /opt/ && \
+  (wget -q -O - https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz | tar zxf -) && \
+  ln -fs /opt/sbt/bin/sbt /usr/local/bin/sbt && \
   sbt sbtVersion
 
 # Define working directory
